@@ -34,9 +34,13 @@ psql time_off_manager <db/seed.sql
 
 ```
 
-## Configuration
+## Starting the server
 
-Update the `db-uri` in included `postgrest.conf`.
+Before you can start the server, please, update the `db-uri` in included `postgrest.conf`. Once updated simply start the postgREST server 
+
+```bash
+postgrest
+```
 
 ## Usage
 
