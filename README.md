@@ -5,6 +5,7 @@ This repository is a source code of the Time Off Manager - tutorial published as
 You can find the individual parts of the tutorial here:
 
 - [Part 1](https://notso.boringsql.com/posts/postgrest-tutorial-part1/)
+- [Part 2](https://notso.boringsql.com/posts/postgrest-tutorial-part2/)
 
 ## Prerequisites
 
@@ -29,9 +30,9 @@ psql template1 -c "CREATE DATABASE time_off_manager"
 
 Create the schema and seed the database
 ```bash
-psql time_off_manager <db/schema.sql
+psql time_off_manager <db/001_part1_schema.sql
+psql time_off_manager <db/002_part2_api.sql
 psql time_off_manager <db/seed.sql
-
 ```
 
 ## Starting the server
@@ -53,13 +54,23 @@ Here are some basic cURL commands to interact with the API:
 
 - **Add a new user:**
   ```bash
-  curl -X POST "http://localhost:3000/users" \
-       -H "Content-Type: application/json" \
-       -d '{"email": "newuser@example.com", "manager_id": 1}'
+  curl "http://localhost:3000/rpc/add_user" -X POST \
+	-d '{ "email": "admin2@example.com", "manager_id": 2 }' \
+	-H "Content-Type: application/json"
+   ```
 
-- **Get the time off transaction for specific user**
+- **Request time off for specific user**
   ```bash 
-  curl "http://localhost:3000/time_off_transactions?user_id=eq.1"
+  curl -X POST "http://localhost:3000/rpc/request_time_off" \
+	-d '{"user_id": 6, "leave_type": "vacation", "period": "[2024-05-20,2024-05-21]"} ' \
+	-H "Content-Type: application/json"
+  ```
+
+- **Approve the time off request**
+  ```bash
+  curl -X POST "http://localhost:3000/rpc/update_request" \
+	-d '{"request_id": 1, "user_id": 2, "new_status": "approved"}' \
+	-H "Content-Type: application/json"
   ```
 
 ## Contributing
