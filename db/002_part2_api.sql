@@ -45,7 +45,7 @@ CREATE OR REPLACE FUNCTION api.add_user(
     manager_id integer
 ) RETURNS integer AS $$
 DECLARE
-    new_user_id integer;
+    v_new_user_id integer;
 BEGIN
     -- check if email already exists
     PERFORM 1 FROM api.users WHERE users.email = add_user.email;
@@ -61,9 +61,9 @@ BEGIN
     
     INSERT INTO public.users (email, manager_id)
     VALUES (add_user.email, add_user.manager_id)
-    RETURNING user_id INTO new_user_id;
+    RETURNING user_id INTO v_new_user_id;
     
-    RETURN new_user_id;
+    RETURN v_new_user_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -144,8 +144,8 @@ CREATE OR REPLACE FUNCTION api.update_request(
     new_status TEXT
 ) RETURNS VOID AS $$
 DECLARE
-    requested_user_id INT;
-    request_manager_id INT;
+    v_requested_user_id INT;
+    v_request_manager_id INT;
 BEGIN
     -- validate the new status
     IF new_status NOT IN ('approved', 'rejected') THEN
@@ -153,7 +153,7 @@ BEGIN
     END IF;
 
     -- retrieve the request together with the users associated with it
-    SELECT pr.user_id, pr.manager_id INTO requested_user_id, request_manager_id
+    SELECT pr.user_id, pr.manager_id INTO v_requested_user_id, v_request_manager_id
     FROM api.pending_requests pr
     WHERE pr.request_id = update_request.request_id;
 
@@ -162,12 +162,12 @@ BEGIN
     END IF;
 
     -- prevent users from self-approving their requests
-    IF user_id = requested_user_id THEN
+    IF user_id = v_requested_user_id THEN
         RAISE EXCEPTION 'User cannot approve or reject their own request';
     END IF;
 
     -- check if the user is either the requester’s manager or the boss
-    IF (request_manager_id IS NOT NULL AND user_id <> request_manager_id) THEN
+    IF (v_request_manager_id IS NOT NULL AND user_id <> v_request_manager_id) THEN
 		RAISE EXCEPTION 'Only the manager or The Boss can approve or reject the request';
     END IF;
 
